@@ -2,30 +2,35 @@
 # -*- coding: utf-8 -*-
 
 from setuptools import setup, find_packages
-import os
+from pathlib import Path
 
-# Функция для чтения версии из основного файла
+# Чтение версии из src/gguf_merge_tool.py
 def get_version():
-    with open("gguf_merge_tool.py", "r", encoding="utf-8") as f:
+    version_file = Path(__file__).parent / "src" / "gguf_merge_tool.py"
+    if not version_file.exists():
+        return "10.0"
+    with open(version_file, "r", encoding="utf-8") as f:
         for line in f:
             if line.startswith("VERSION"):
-                return line.split("=")[1].strip().strip('"')
+                return line.split("=")[1].strip().strip('"').strip("'")
     return "10.0"
 
-with open("README.md", "r", encoding="utf-8") as fh:
-    long_description = fh.read()
+# Чтение README.md
+readme_file = Path(__file__).parent / "README.md"
+long_description = readme_file.read_text(encoding="utf-8") if readme_file.exists() else ""
 
 setup(
     name="gguf-merge-tool",
-    version=get_version(),  # Автоматически берет 10.0 из кода
+    version=get_version(),
     author="Andre",
     author_email="satarangel@gmail.com",
     description="Professional GUI + CLI tool for downloading, verifying and merging sharded GGUF models",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/Andre17111978/gguf-merge-tool",
-    packages=find_packages(),  # Упрощаем, если файл в корне
-    py_modules=["gguf_merge_tool"],  # Основной модуль
+    package_dir={"": "src"},
+    packages=find_packages(where="src"),
+    py_modules=["gguf_merge_tool"],
     python_requires=">=3.8",
     install_requires=[
         "huggingface_hub>=0.20.0",
