@@ -1,261 +1,144 @@
-GGUF Merge Tool v9.2
+GGUF Merge Tool v10.0
+https://badge.fury.io/py/gguf-merge-tool.svg
+https://img.shields.io/badge/python-3.8+-blue.svg
+https://img.shields.io/badge/License-MIT-yellow.svg
 
-Hugging Faceからシャード化されたGGUFモデルをダウンロード、検証、マージするためのプロフェッショナルなGUI + CLIツール
-目次
+プロフェッショナルなGUI + CLIツール - Hugging FaceからシャーディングされたGGUFモデルをダウンロード、検証、マージするためのツールです。
 
-    機能
+✨ バージョン10.0の新機能
+機能	説明
+プログレスバーの修正	ハッシュ検証とマージ操作中に進捗がスムーズかつ正確に表示されるようになりました
+ローカルファイルの読み込み	「ローカル」ボタンでディスク上のGGUFファイルが含まれるフォルダを選択し、ダウンロードなしで作業できます
+リポジトリ履歴	リポジトリ入力フィールドのドロップダウンリスト — 過去10件のクエリを保存
+🚀 主な機能
+ダウンロード Hugging FaceからのGGUFファイル（レジューム機能付き）。
 
-    クイックスタート
+整合性検証 ダウンロードしたファイルのSHA-256チェック。
 
-    インストール
+マージ llama-gguf-splitを使用して分割ファイルを1つのGGUFファイルに結合。
 
-    CLIの使用方法
+グループ化 量子化とベース名によるファイルの自動グループ化。
 
-    GUIの使用方法
+マルチスレッド ダウンロード（コア数を自動検出）。
 
-    設定
+リアルタイムETA ダウンロード中の速度（MB/s）と残り時間を表示。
 
-    要件
+CLIモード 自動化に対応。
 
-    トラブルシューティング
+永続化 セッション間でのトークンとllama.cppパスの保存。
 
-    パフォーマンスのヒント
-
-    技術的詳細
-
-    ライセンス
-
-    謝辞
-
-    サポート
-
-機能
-
-モダンなGUI - Tkinterベースのインターフェース、スクロール可能なファイルリスト、マウスホイールサポート
-
-スマートグループ化 - 量子化タイプ別に自動グループ化 (Q4_K_M, Q5_K_Sなど)
-
-レジュームダウンロード - HTTP Rangeリクエストとスマートフォールバック保護 (200 vs 206処理)
-
-並列ダウンロード - 設定可能なスレッド数 (CPUコアを自動検出)
-
-ハッシュ検証 - HF LFSメタデータを使用したSHA256検証
-
-スマートマージ - llama.cppのllama-gguf-splitを使用
-
-CLIサポート - 自動化のためのdownloadとmergeサブコマンド
-
-スマート検出 - 一般的な場所でllama-gguf-splitを自動検出
-
-パス永続化 - セッション間でllama.cppのパスを保存
-
-リトライロジック - 指数バックオフによる自動リトライ (3回)
-
-リアルタイムETA - 速度(MB/s)と推定残り時間を表示
-
-多言語 - 6言語のドキュメント
-クイックスタート
-Windows
-
-依存関係をインストール:
-pip install huggingface_hub tqdm requests
-
-llama-gguf-splitをダウンロード: https://github.com/ggerganov/llama.cpp/releases
-
-ツールを実行:
-python gguf_merge_tool.py
-Linux / macOS
-
-依存関係をインストール:
-pip install huggingface_hub tqdm requests
-
-ツールを実行:
-python3 gguf_merge_tool.py
-インストール
-ソースからインストール (推奨)
-
-リポジトリをクローン:
-git clone https://github.com/yourusername/gguf-merge-tool.git
-cd gguf-merge-tool
-
-依存関係をインストール:
-pip install -r requirements.txt
-
-ツールを実行:
-python src/gguf_merge_tool.py
-PyPIから (近日公開)
-
+📦 インストール
+PyPIから（推奨）
+bash
 pip install gguf-merge-tool
+インストール後、以下の2つのコマンドが使用可能になります：
+
+gguf-merge-gui — グラフィカルインターフェースを起動
+
+gguf-merge — CLIモードを起動
+
+ソースから
+bash
+git clone https://github.com/Andre17111978/gguf-merge-tool.git
+cd gguf-merge-tool
+pip install -r requirements.txt
+python gguf_merge_tool.py
+🖥️ 使用方法（GUI）
+bash
 gguf-merge-gui
-Windowsユーザー: 必要なバイナリ
-
-llama.cppリリースからllama-gguf-split.exeをダウンロード
-以下のいずれかの場所に配置:
-
-    tools/llama-gguf-split.exe
-
-    bin/llama-gguf-split.exe
-
-    またはGUI設定でパスを指定
-
-CLIの使用方法
+# または
+python gguf_merge_tool.py
+ステップバイステップのインターフェース：
+フィールド	説明
+リポジトリ	Hugging FaceのリポジトリIDを入力（例：unsloth/Qwen3.5-122B-A10B-GGUF）。
+履歴は自動的に過去10件のクエリを保存します。
+ブランチ	通常はmain。
+トークン	オプション。プライベートリポジトリ用（形式：hf_xxxxxxxxxxxxxxxxxx）。
+ダウンロードフォルダ	ファイルの保存先。
+llama.cppパス	llama-gguf-splitが含まれるフォルダを指定（マージに必要）。
+ファイル	チェックボックス付きのGGUFファイル一覧。量子化タイプで自動グループ化されます。
+コントロールボタン：
+ボタン	機能
+読み込み	リポジトリからファイル一覧を取得。
+ローカル	ディスク上のGGUFフォルダを選択。
+すべて選択 / すべてダウンロード	一括操作。
+ダウンロード	選択したファイルをダウンロード。
+検証	SHA-256ハッシュをチェック。
+マージ	選択したパーツを結合。
+⌨️ 使用方法（CLI）
 特定のファイルをダウンロード
-
-python src/gguf_merge_tool.py download -r unsloth/Qwen3.5-122B-A10B-GGUF -d ./models -f Qwen3.5-122B-A10B-Q4_K_M-00001-of-00008.gguf Qwen3.5-122B-A10B-Q4_K_M-00002-of-00008.gguf
+bash
+gguf-merge download -r unsloth/Qwen3.5-122B-A10B-GGUF -d ./models -f model-00001-of-00003.gguf model-00002-of-00003.gguf
 リポジトリ全体をダウンロード
-
-python src/gguf_merge_tool.py download -r unsloth/Qwen3.5-122B-A10B-GGUF -d ./models
-認証付きダウンロード (プライベートリポジトリ)
-
-python src/gguf_merge_tool.py download -r your-username/your-private-model -d ./models -t hf_xxxxxxxxxxxxxxxxxx
+bash
+gguf-merge download -r unsloth/Qwen3.5-122B-A10B-GGUF -d ./models
+トークンを使用してダウンロード（プライベートリポジトリ）
+bash
+gguf-merge download -r your-username/your-private-model -d ./models -t hf_xxxxxxxxxxxxxxxxxx
 パーツをマージ
+bash
+gguf-merge merge -d ./models -o ./models/merged_model.gguf -f
+CLI引数
+downloadコマンド：
 
-python src/gguf_merge_tool.py merge -d ./models -o ./models/merged_model.gguf -f
-CLI引数リファレンス
+引数	説明
+-d, --dir	保存フォルダ（必須）
+-r, --repo	リポジトリID（必須）
+-b, --branch	ブランチ（デフォルト：main）
+-t, --token	Hugging Faceトークン
+-f, --files	ダウンロードするファイルのリスト
+mergeコマンド：
 
-コマンド: download
--d, --dir - ファイルを保存するディレクトリ - 必須: はい
--r, --repo - Hugging FaceリポジトリID - 必須: はい
--b, --branch - リポジトリブランチ (デフォルト: main) - 必須: いいえ
--t, --token - HFアクセストークン - 必須: いいえ
--f, --files - ダウンロードするファイルのリスト - 必須: いいえ
-
-コマンド: merge
--d, --dir - パーツがあるディレクトリ - 必須: はい
--o, --output - 出力ファイルのパス - 必須: いいえ
--f, --force - 既存ファイルを上書き - 必須: いいえ
-GUIの使用方法
-ステップ1: リポジトリを読み込む
-
-Hugging FaceリポジトリIDを入力 (例: unsloth/Qwen3.5-122B-A10B-GGUF)
-ブランチを入力 (デフォルト: main)
-HFトークンを入力 (プライベートリポジトリに必要)
-"読み込み"ボタンをクリック
-ステップ2: ファイルを選択
-
-ファイルは量子化タイプ別に自動グループ化
-"すべて選択"をクリックして全ファイルを選択
-またはチェックボックスで個別ファイルを選択
-ステップ3: ダウンロード
-
-"ダウンロード"または"すべてダウンロード"をクリック
-リアルタイムで進捗を監視:
-
-    プログレスバーはパーセンテージを表示
-
-    ステータスバー表示: [1/4] filename.gguf: 45% | 4.5 MB/s | ETA: 2h 15m
-
-ステップ4: 検証 (オプションだが推奨)
-
-"検証"ボタンをクリック
-ツールがHFメタデータに対してSHA256ハッシュを検証
-すべてのハッシュが一致すると成功メッセージを表示
-ステップ5: マージ (オプション)
-
-少なくとも2つのパーツを選択 (チェックボックス)
-"マージ"ボタンをクリック
-ツールがllama-gguf-split --mergeを実行
-出力ファイルは正しいベース名で保存
-設定
-llama.cppパス
-
-GUIで"llama.cppへのパス"を探す:
-"検索"をクリックして自動検出
-または"参照"をクリックして手動選択
-パスはllama_path.txtに保存され永続化
-スレッド設定
-
-コード内のJOBS定数を調整 (デフォルト: min(4, os.cpu_count() or 2)):
-gguf_merge_tool.py内
-JOBS = min(4, os.cpu_count() or 2) - この値を変更
-ディスクスペースマージン
-
-DISK_SPACE_MARGINを変更 (デフォルト: 1.1 = 10%余分):
-DISK_SPACE_MARGIN = 1.1
-ダウンロードチャンクサイズ
-
-CHUNK_SIZEを変更 (デフォルト: 1 MB):
-CHUNK_SIZE = 1024 * 1024
-要件
-
+引数	説明
+-d, --dir	パーツが入っているフォルダ（必須）
+-o, --output	出力ファイルのパス
+-f, --force	既存ファイルを上書き
+⚙️ システム要件
 Python >= 3.8
+
+依存関係（自動インストール）：
 huggingface_hub >= 0.20.0
+
 tqdm >= 4.60.0
+
 requests >= 2.28.0
-gguf >= 0.1.0 (オプション、メタデータ読み取り用)
-llama-gguf-split (llama.cppから)
-インストール確認
 
-python -c "import huggingface_hub, tqdm, requests; print('すべての依存関係がインストールされました')"
-トラブルシューティング
+gguf >= 0.1.0（オプション、メタデータ読み取り用）
+
+追加で必要なツール：
+llama-gguf-split（llama.cppリリースページからダウンロード）
+
+🛠️ トラブルシューティング
 llama-gguf-splitが見つからない
+llama.cppリリースページからダウンロード
 
-llama.cppリリースからダウンロード
-tools/フォルダに配置するかGUIでパスを指定
-HTTP 401 UnauthorizedまたはHTTP 403 Forbidden
+tools/フォルダに配置するか、GUI設定でパスを指定
 
-Hugging Faceトークンを入力
-トークンがリポジトリへの読み取りアクセス権を持っていることを確認
-トークン形式: hf_xxxxxxxxxxxxxxxxxx
-ディスクスペース不足
+HTTP 401/403（認証エラー/アクセス禁止）
+有効なHugging Faceトークンを入力
 
-ディスクスペースを解放 (マージに10%の余裕が必要)
-ダウンロードディレクトリを別のドライブに変更
-DISK_SPACE_MARGINを使用してバッファを調整
-ダウンロードが0%で停止
+トークンがリポジトリへのアクセス権を持っていることを確認
 
-インターネット接続を確認
-トークンが正しいか確認
-リポジトリがプライベートか確認
-リポジトリが存在するか確認
-再開後にファイルが破損
+ディスク容量が不足している
+容量を空けるか、ダウンロードフォルダを変更
 
-ツールにはRangeフォールバック保護が組み込まれている
-サーバーがRangeをサポートしない場合 (206ではなく200を返す)、ダウンロードを最初から開始
-これはファイル破損を防ぐための意図的な動作
-GUIが起動しない
+コード内のDISK_SPACE_MARGINを変更可能（デフォルト：1.1 = 10%のバッファ）
 
-Tkinterがインストールされているか確認 (通常Pythonに含まれる)
-Linuxの場合: sudo apt-get install python3-tk
-macOSの場合: brew install python-tk
-パフォーマンスのヒント
+LinuxでGUIが起動しない
+bash
+sudo apt-get install python3-tk  # Debian/Ubuntu
+brew install python-tk           # macOS
+📝 ライセンス
+MITライセンスの下で配布されています。詳細はLICENSEファイルをご覧ください。
 
-多くの小ファイル - デフォルトスレッドを維持 (4)
-少数の大ファイル - スレッドを8に増やす
-ネットワークが遅い - スレッドを2に減らす
-高速NVMe SSD - デフォルト維持または増加
-ネットワーク切断 - ツールが自動的に再開
-技術的詳細
-ダウンロードフロー
+🙏 謝辞
+llama.cpp — マージユーティリティを提供
 
-HFリポジトリからファイルリストを取得 (サイズとハッシュを含む)
-ユーザーがダウンロードするファイルを選択
-ディスクスペースをチェック - 不足している場合は中止
-Rangeリクエストによる並列ダウンロードと再開
-スマートRangeフォールバック (200 vs 206処理)
-速度計算によるリアルタイム進捗
-ダウンロード後のSHA256検証
-llama-gguf-splitによるマージ
-ETA計算
+Hugging Face — モデルをホスティング
 
-ETA = (総バイト数 - ダウンロード済みバイト数) / 現在の速度
-サポートされている量子化
+コミュニティの皆様 — テストとアイデアを提供
 
-F16, F32, Q8_0, Q6_K, Q5_K_M, Q5_K_S, Q4_K_M, Q4_K_S, Q3_K_M, Q3_K_S, Q2_K, IQ4_XS, IQ3_XS, IQ2_XS, IQ1_S
-ライセンス
+⭐ プロジェクトをサポート
+このツールがお役に立ったなら、GitHubでスターを付けてください！
 
-MITライセンス - 詳細はLICENSEファイルを参照。
-謝辞
-
-llama.cpp (マージユーティリティ)
-Hugging Face (モデルホスティング)
-Python Tkinter (GUI)
-サポート
-
-問題: GitHub Issues
-ディスカッション: GitHub Discussions
-このプロジェクトにスターを付ける
-
-このツールが役に立ったら、GitHubでスターを付けてください！
-
-❤️を込めてAIコミュニティへ
+❤️ AIコミュニティのために作られました

@@ -1,261 +1,144 @@
-GGUF Merge Tool v9.2
+GGUF Merge Tool v10.0
+https://badge.fury.io/py/gguf-merge-tool.svg
+https://img.shields.io/badge/python-3.8+-blue.svg
+https://img.shields.io/badge/License-MIT-yellow.svg
 
-用于从Hugging Face下载、验证和合并分片GGUF模型的专业GUI + CLI工具。
-目录
+专业的图形界面 + 命令行工具，用于从 Hugging Face 下载、验证和合并分片的 GGUF 模型。
 
-    功能特点
+✨ 10.0 版本新功能
+功能	说明
+修复进度条	在哈希验证和合并操作期间，进度显示平滑且正确
+本地文件加载	“本地”按钮允许您选择磁盘上的 GGUF 文件夹，无需下载即可使用
+仓库历史记录	仓库输入框中的下拉列表 — 保存最近 10 次查询
+🚀 主要功能
+下载 来自 Hugging Face 的 GGUF 文件，支持断点续传。
 
-    快速开始
+完整性验证 已下载文件的 SHA-256 校验。
 
-    安装
+合并 使用 llama-gguf-split 将分片合并为一个完整的 GGUF 文件。
 
-    CLI使用
+分组 按量化和基础文件名对文件进行分组。
 
-    GUI使用
+多线程 下载（自动检测 CPU 核心数）。
 
-    配置
+实时预估 下载期间的剩余时间 (ETA) 和速度 (MB/s)。
 
-    系统要求
+命令行模式 便于自动化操作。
 
-    故障排除
+持久化 跨会话保存令牌和 llama.cpp 路径。
 
-    性能建议
-
-    技术细节
-
-    许可证
-
-    致谢
-
-    支持
-
-功能特点
-
-现代化GUI - 基于Tkinter的界面，支持滚动文件列表和鼠标滚轮
-
-智能分组 - 根据量化类型自动分组文件 (Q4_K_M, Q5_K_S等)
-
-断点续传 - HTTP Range请求，智能降级保护 (200 vs 206处理)
-
-并行下载 - 可配置线程数 (自动检测CPU核心)
-
-哈希验证 - 使用HF LFS元数据验证SHA256
-
-智能合并 - 使用llama-gguf-split工具
-
-CLI支持 - download和merge子命令，便于自动化
-
-智能检测 - 自动在常见位置查找llama-gguf-split
-
-路径持久化 - 保存llama.cpp路径，跨会话使用
-
-重试逻辑 - 自动重试，指数退避 (3次尝试)
-
-实时ETA - 显示速度(MB/s)和预计剩余时间
-
-多语言 - 支持6种语言文档
-快速开始
-Windows
-
-安装依赖:
-pip install huggingface_hub tqdm requests
-
-从以下地址下载llama-gguf-split: https://github.com/ggerganov/llama.cpp/releases
-
-运行工具:
-python gguf_merge_tool.py
-Linux / macOS
-
-安装依赖:
-pip install huggingface_hub tqdm requests
-
-运行工具:
-python3 gguf_merge_tool.py
-安装
-从源码安装 (推荐)
-
-克隆仓库:
-git clone https://github.com/yourusername/gguf-merge-tool.git
-cd gguf-merge-tool
-
-安装依赖:
-pip install -r requirements.txt
-
-运行工具:
-python src/gguf_merge_tool.py
-从PyPI安装 (即将推出)
-
+📦 安装
+从 PyPI 安装（推荐）
+bash
 pip install gguf-merge-tool
+安装完成后，可以使用以下两个命令：
+
+gguf-merge-gui — 启动图形界面
+
+gguf-merge — 启动命令行模式
+
+从源码安装
+bash
+git clone https://github.com/Andre17111978/gguf-merge-tool.git
+cd gguf-merge-tool
+pip install -r requirements.txt
+python gguf_merge_tool.py
+🖥️ 使用方法（图形界面）
+bash
 gguf-merge-gui
-Windows用户: 需要二进制文件
-
-从llama.cpp版本下载llama-gguf-split.exe
-放置在以下位置之一:
-
-    tools/llama-gguf-split.exe
-
-    bin/llama-gguf-split.exe
-
-    或在GUI设置中指定路径
-
-CLI使用
-下载特定文件
-
-python src/gguf_merge_tool.py download -r unsloth/Qwen3.5-122B-A10B-GGUF -d ./models -f Qwen3.5-122B-A10B-Q4_K_M-00001-of-00008.gguf Qwen3.5-122B-A10B-Q4_K_M-00002-of-00008.gguf
+# 或
+python gguf_merge_tool.py
+界面分步说明：
+字段	说明
+仓库 (Repository)	输入 Hugging Face 仓库 ID（例如：unsloth/Qwen3.5-122B-A10B-GGUF）。
+历史记录自动保存最近 10 次查询。
+分支 (Branch)	通常为 main。
+令牌 (Token)	可选，用于私有仓库（格式：hf_xxxxxxxxxxxxxxxxxx）。
+下载文件夹	文件保存位置。
+llama.cpp 路径	指定包含 llama-gguf-split 的文件夹（合并时需要）。
+文件列表	带复选框的 GGUF 文件列表，按量化类型自动分组。
+控制按钮：
+按钮	功能
+加载 (Load)	从仓库获取文件列表。
+本地 (Local)	选择磁盘上的 GGUF 文件夹。
+全选 / 全部下载	批量操作。
+下载 (Download)	下载选中的文件。
+验证 (Verify)	检查 SHA-256 哈希值。
+合并 (Merge)	合并选中的分片。
+⌨️ 使用方法（命令行）
+下载指定文件
+bash
+gguf-merge download -r unsloth/Qwen3.5-122B-A10B-GGUF -d ./models -f model-00001-of-00003.gguf model-00002-of-00003.gguf
 下载整个仓库
-
-python src/gguf_merge_tool.py download -r unsloth/Qwen3.5-122B-A10B-GGUF -d ./models
-使用认证下载 (私有仓库)
-
-python src/gguf_merge_tool.py download -r your-username/your-private-model -d ./models -t hf_xxxxxxxxxxxxxxxxxx
+bash
+gguf-merge download -r unsloth/Qwen3.5-122B-A10B-GGUF -d ./models
+使用令牌下载（私有仓库）
+bash
+gguf-merge download -r your-username/your-private-model -d ./models -t hf_xxxxxxxxxxxxxxxxxx
 合并分片
+bash
+gguf-merge merge -d ./models -o ./models/merged_model.gguf -f
+命令行参数
+download 命令：
 
-python src/gguf_merge_tool.py merge -d ./models -o ./models/merged_model.gguf -f
-CLI参数参考
+参数	说明
+-d, --dir	保存文件夹（必填）
+-r, --repo	仓库 ID（必填）
+-b, --branch	分支名称（默认：main）
+-t, --token	Hugging Face 令牌
+-f, --files	要下载的文件列表
+merge 命令：
 
-命令: download
--d, --dir - 保存文件的目录 - 必填: 是
--r, --repo - Hugging Face仓库ID - 必填: 是
--b, --branch - 仓库分支 (默认: main) - 必填: 否
--t, --token - HF访问令牌 - 必填: 否
--f, --files - 要下载的文件列表 - 必填: 否
-
-命令: merge
--d, --dir - 包含分片的目录 - 必填: 是
--o, --output - 输出文件路径 - 必填: 否
--f, --force - 覆盖现有文件 - 必填: 否
-GUI使用
-步骤1: 加载仓库
-
-输入Hugging Face仓库ID (例如: unsloth/Qwen3.5-122B-A10B-GGUF)
-输入分支 (默认: main)
-输入HF令牌 (私有仓库需要)
-点击"加载"按钮
-步骤2: 选择文件
-
-文件自动按量化类型分组
-点击"全选"选择所有文件
-或使用复选框选择单个文件
-步骤3: 下载
-
-点击"下载"或"全部下载"
-实时监控进度:
-
-    进度条显示百分比
-
-    状态栏显示: [1/4] filename.gguf: 45% | 4.5 MB/s | ETA: 2h 15m
-
-步骤4: 验证 (可选但推荐)
-
-点击"验证"按钮
-工具根据HF元数据验证SHA256哈希
-如果所有哈希匹配则显示成功消息
-步骤5: 合并 (可选)
-
-选择至少2个分片 (复选框)
-点击"合并"按钮
-工具调用llama-gguf-split --merge
-输出文件以正确的基名保存
-配置
-llama.cpp路径
-
-在GUI中找到"Path to llama.cpp":
-点击"查找"自动检测
-或点击"浏览"手动选择
-路径保存到llama_path.txt以便跨会话使用
-线程设置
-
-修改代码中的JOBS常量 (默认: min(4, os.cpu_count() or 2)):
-在gguf_merge_tool.py中
-JOBS = min(4, os.cpu_count() or 2) - 更改此值
-磁盘空间余量
-
-更改DISK_SPACE_MARGIN (默认: 1.1 = 10%余量):
-DISK_SPACE_MARGIN = 1.1
-下载块大小
-
-更改CHUNK_SIZE (默认: 1 MB):
-CHUNK_SIZE = 1024 * 1024
-系统要求
-
+参数	说明
+-d, --dir	分片所在文件夹（必填）
+-o, --output	输出文件路径
+-f, --force	覆盖已存在的文件
+⚙️ 系统要求
 Python >= 3.8
+
+依赖项（自动安装）：
 huggingface_hub >= 0.20.0
+
 tqdm >= 4.60.0
+
 requests >= 2.28.0
-gguf >= 0.1.0 (可选，用于读取元数据)
-llama-gguf-split (来自llama.cpp)
-验证安装
 
-python -c "import huggingface_hub, tqdm, requests; print('所有依赖已安装')"
-故障排除
-llama-gguf-split未找到
+gguf >= 0.1.0（可选，用于读取元数据）
 
-从llama.cpp版本下载
-放置在tools/文件夹或在GUI中指定路径
-HTTP 401 Unauthorized或HTTP 403 Forbidden
+需要额外工具：
+llama-gguf-split（从 llama.cpp 发布页面 下载）
 
-输入您的Hugging Face令牌
-确保令牌对仓库有读取权限
-令牌格式: hf_xxxxxxxxxxxxxxxxxx
+🛠️ 故障排除
+找不到 llama-gguf-split
+从 llama.cpp 发布页面 下载
+
+将其放入 tools/ 文件夹，或在图形界面设置中指定路径
+
+HTTP 401/403（未授权/禁止访问）
+输入有效的 Hugging Face 令牌
+
+确保令牌具有访问该仓库的权限
+
 磁盘空间不足
+释放空间或更改下载文件夹
 
-释放磁盘空间 (合并需要10%余量)
-更改下载目录到其他驱动器
-使用DISK_SPACE_MARGIN调整余量
-下载卡在0%
+可以在代码中修改 DISK_SPACE_MARGIN（默认：1.1 = 预留 10% 空间）
 
-检查网络连接
-验证令牌是否正确
-检查仓库是否为私有
-检查仓库是否存在
-恢复后文件损坏
+在 Linux 上无法启动图形界面
+bash
+sudo apt-get install python3-tk  # Debian/Ubuntu
+brew install python-tk           # macOS
+📝 许可证
+采用 MIT 许可证分发。详情请参阅 LICENSE 文件。
 
-工具内置Range降级保护
-如果服务器不支持Range (返回200而不是206)，从头开始下载
-这是为了防止文件损坏
-GUI无法启动
+🙏 致谢
+llama.cpp — 合并工具
 
-检查Tkinter是否已安装 (通常随Python一起安装)
-在Linux上: sudo apt-get install python3-tk
-在macOS上: brew install python-tk
-性能建议
+Hugging Face — 模型托管平台
 
-许多小文件 - 保持默认线程(4)
-少数大文件 - 增加线程到8
-网络慢 - 减少线程到2
-快速NVMe SSD - 保持默认或增加
-网络中断 - 工具自动恢复下载
-技术细节
-下载流程
+社区用户 — 测试和反馈建议
 
-从HF仓库获取文件列表及其大小和哈希值
-用户选择要下载的文件
-检查磁盘空间 - 不足则中止
-使用Range请求并行下载并支持断点续传
-智能Range降级处理 (200 vs 206)
-实时进度和速度计算
-下载后SHA256验证
-通过llama-gguf-split合并
-ETA计算
+⭐ 支持项目
+如果您觉得这个工具有用，请在 GitHub 上给它点个星！
 
-ETA = (总字节 - 已下载字节) / 当前速度
-支持的量化类型
-
-F16, F32, Q8_0, Q6_K, Q5_K_M, Q5_K_S, Q4_K_M, Q4_K_S, Q3_K_M, Q3_K_S, Q2_K, IQ4_XS, IQ3_XS, IQ2_XS, IQ1_S
-许可证
-
-MIT许可证 - 详见LICENSE文件。
-致谢
-
-llama.cpp提供的合并工具
-Hugging Face提供的模型托管
-Python Tkinter提供的GUI
-支持
-
-问题反馈: GitHub Issues
-讨论: GitHub Discussions
-为项目加星
-
-如果您觉得这个工具有用，请在GitHub上给它一颗星！
-
-为AI社区献上❤️
+❤️ 为 AI 社区精心打造

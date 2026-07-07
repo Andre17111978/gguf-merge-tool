@@ -1,261 +1,145 @@
-GGUF Merge Tool v9.2
+GGUF Merge Tool v10.0
+https://badge.fury.io/py/gguf-merge-tool.svg
+https://img.shields.io/badge/python-3.8+-blue.svg
+https://img.shields.io/badge/License-MIT-yellow.svg
 
 Professional GUI + CLI tool for downloading, verifying and merging sharded GGUF models from Hugging Face.
-Table of Contents
 
-    Features
+✨ What's New in Version 10.0
+Feature	Description
+Fixed Status Bars	Progress displays smoothly and correctly during hash verification and merging operations
+Local File Loading	"Local" button allows you to select a folder with GGUF files on disk and work with them without downloading
+Repository History	Dropdown list in the repository input field — saves the last 10 queries
+🚀 Key Features
+Download GGUF files from Hugging Face with resume support.
 
-    Quick Start
+Integrity verification (SHA-256) of downloaded files.
 
-    Installation
+Merge parts (splits) into a single GGUF file using llama-gguf-split.
 
-    CLI Usage
+Group files by quantization and base name.
 
-    GUI Usage
+Multithreaded downloading (auto-detects number of cores).
 
-    Configuration
+Real ETA and speed (MB/s) during download.
 
-    Requirements
+CLI mode for automation.
 
-    Troubleshooting
+Persistent token and llama.cpp path across sessions.
 
-    Performance Tips
-
-    Technical Details
-
-    License
-
-    Acknowledgments
-
-    Support
-
-Features
-
-Modern GUI - Tkinter-based interface with scrollable file list and mouse wheel support
-
-Smart Grouping - Files automatically grouped by quantization type (Q4_K_M, Q5_K_S, etc.)
-
-Resume Downloads - HTTP Range requests with smart fallback protection (200 vs 206 handling)
-
-Parallel Downloading - Configurable threads (auto-detects CPU cores)
-
-Hash Verification - SHA256 verification using HF LFS metadata
-
-Smart Merge - Uses llama-gguf-split from llama.cpp
-
-CLI Support - download and merge subcommands for automation
-
-Smart Detection - Automatically finds llama-gguf-split in common locations
-
-Path Persistence - Saves llama.cpp path between sessions
-
-Retry Logic - Automatic retry with exponential backoff (3 attempts)
-
-Real-time ETA - Shows speed (MB/s) and estimated time remaining
-
-Multi-language - English, Russian, Chinese, Spanish, German, Japanese documentation
-Quick Start
-Windows
-
-Install dependencies:
-pip install huggingface_hub tqdm requests
-
-Download llama-gguf-split from: https://github.com/ggerganov/llama.cpp/releases
-
-Run the tool:
-python gguf_merge_tool.py
-Linux / macOS
-
-Install dependencies:
-pip install huggingface_hub tqdm requests
-
-Run the tool:
-python3 gguf_merge_tool.py
-Installation
-From Source (Recommended)
-
-Clone the repository:
-git clone https://github.com/yourusername/gguf-merge-tool.git
-cd gguf-merge-tool
-
-Install dependencies:
-pip install -r requirements.txt
-
-Run the tool:
-python src/gguf_merge_tool.py
-From PyPI (Coming Soon)
-
+📦 Installation
+From PyPI (recommended)
+bash
 pip install gguf-merge-tool
+After installation, two commands are available:
+
+gguf-merge-gui — launch the graphical interface
+
+gguf-merge — launch CLI mode
+
+From Source
+bash
+git clone https://github.com/Andre17111978/gguf-merge-tool.git
+cd gguf-merge-tool
+pip install -r requirements.txt
+python gguf_merge_tool.py
+🖥️ Usage (GUI)
+bash
 gguf-merge-gui
-Windows Users: Required Binary
-
-Download llama-gguf-split.exe from llama.cpp releases
-Place it in one of these locations:
-
-    tools/llama-gguf-split.exe
-
-    bin/llama-gguf-split.exe
-
-    Or specify the path in GUI settings
-
-CLI Usage
+# or
+python gguf_merge_tool.py
+Step-by-step Interface:
+Field	Description
+Repository	Enter the Hugging Face repository ID (e.g., unsloth/Qwen3.5-122B-A10B-GGUF).
+History automatically saves the last 10 queries.
+Branch	Usually main.
+Token	Optional, for private repositories (format: hf_xxxxxxxxxxxxxxxxxx).
+Download Folder	Where to save files.
+llama.cpp Path	Specify the folder containing llama-gguf-split (required for merging).
+Files	List of GGUF files with checkboxes, automatically grouped by quantization.
+Control Buttons:
+Button	Function
+Load	Fetch the list of files from the repository.
+Local	Select a folder with GGUF files on disk.
+Select All / Download All	Mass operations.
+Download	Download selected files.
+Verify	Check SHA-256 hashes.
+Merge	Combine selected parts.
+⌨️ Usage (CLI)
 Download Specific Files
-
-python src/gguf_merge_tool.py download -r unsloth/Qwen3.5-122B-A10B-GGUF -d ./models -f Qwen3.5-122B-A10B-Q4_K_M-00001-of-00008.gguf Qwen3.5-122B-A10B-Q4_K_M-00002-of-00008.gguf
+bash
+gguf-merge download -r unsloth/Qwen3.5-122B-A10B-GGUF -d ./models -f model-00001-of-00003.gguf model-00002-of-00003.gguf
 Download Entire Repository
-
-python src/gguf_merge_tool.py download -r unsloth/Qwen3.5-122B-A10B-GGUF -d ./models
-Download with Authentication (Private Repo)
-
-python src/gguf_merge_tool.py download -r your-username/your-private-model -d ./models -t hf_xxxxxxxxxxxxxxxxxx
+bash
+gguf-merge download -r unsloth/Qwen3.5-122B-A10B-GGUF -d ./models
+Download with Token (Private Repository)
+bash
+gguf-merge download -r your-username/your-private-model -d ./models -t hf_xxxxxxxxxxxxxxxxxx
 Merge Parts
+bash
+gguf-merge merge -d ./models -o ./models/merged_model.gguf -f
+CLI Arguments
+Command download:
 
-python src/gguf_merge_tool.py merge -d ./models -o ./models/merged_model.gguf -f
-CLI Arguments Reference
+Argument	Description
+-d, --dir	Save folder (required)
+-r, --repo	Repository ID (required)
+-b, --branch	Branch (default: main)
+-t, --token	Hugging Face token
+-f, --files	List of files to download
+Command merge:
 
-Command: download
--d, --dir - Directory to save files - Required: Yes
--r, --repo - Hugging Face repository ID - Required: Yes
--b, --branch - Repository branch (default: main) - Required: No
--t, --token - HF access token - Required: No
--f, --files - List of files to download - Required: No
-
-Command: merge
--d, --dir - Directory with parts - Required: Yes
--o, --output - Output file path - Required: No
--f, --force - Overwrite existing file - Required: No
-GUI Usage
-Step 1: Load Repository
-
-Enter Hugging Face repo ID (e.g., unsloth/Qwen3.5-122B-A10B-GGUF)
-Enter branch (default: main)
-Enter your HF token (required for private repos)
-Click "Load" button
-Step 2: Select Files
-
-Files are automatically grouped by quantization type
-Click "Select All" to select all files
-Or select individual files with checkboxes
-Step 3: Download
-
-Click "Download" or "Download All"
-Monitor progress in real-time:
-
-    Progress bar shows percentage
-
-    Status bar shows: [1/4] filename.gguf: 45% | 4.5 MB/s | ETA: 2h 15m
-
-Step 4: Verify (Optional but Recommended)
-
-Click "Verify" button
-Tool validates SHA256 hashes against HF metadata
-Shows success message if all hashes match
-Step 5: Merge (Optional)
-
-Select at least 2 parts (checkboxes)
-Click "Merge" button
-Tool calls llama-gguf-split --merge
-Output file is saved with correct base name
-Configuration
-llama.cpp Path
-
-In GUI, locate "Path to llama.cpp":
-Click "Find" for auto-detection
-Or click "Browse" to select manually
-Path is saved to llama_path.txt for persistence
-Thread Settings
-
-Adjust JOBS constant in code (default: min(4, os.cpu_count() or 2)):
-In gguf_merge_tool.py
-JOBS = min(4, os.cpu_count() or 2) - Change this value
-Disk Space Margin
-
-Change DISK_SPACE_MARGIN (default: 1.1 = 10% extra):
-DISK_SPACE_MARGIN = 1.1
-Download Chunk Size
-
-Change CHUNK_SIZE (default: 1 MB):
-CHUNK_SIZE = 1024 * 1024
-Requirements
-
+Argument	Description
+-d, --dir	Folder with parts (required)
+-o, --output	Output file path
+-f, --force	Overwrite existing file
+⚙️ Requirements
 Python >= 3.8
+
+Dependencies (installed automatically):
 huggingface_hub >= 0.20.0
+
 tqdm >= 4.60.0
+
 requests >= 2.28.0
-gguf >= 0.1.0 (optional, for metadata reading)
-llama-gguf-split (from llama.cpp)
-Verify Installation
 
-python -c "import huggingface_hub, tqdm, requests; print('All dependencies installed')"
-Troubleshooting
-llama-gguf-split not found
+gguf >= 0.1.0 (optional, for reading metadata)
 
+Additional Tool Required:
+llama-gguf-split (download from llama.cpp releases)
+
+🛠️ Troubleshooting
+llama-gguf-split Not Found
 Download from llama.cpp releases
-Place in tools/ folder or specify path in GUI
-HTTP 401 Unauthorized or HTTP 403 Forbidden
 
-Enter your Hugging Face token
-Ensure token has read access to the repository
-Token format: hf_xxxxxxxxxxxxxxxxxx
-Insufficient disk space
+Place it in the tools/ folder or specify the path in GUI settings
 
-Free up disk space (need 10% extra for merge)
-Change download directory to another drive
-Use DISK_SPACE_MARGIN to adjust buffer
-Download stuck at 0%
+HTTP 401/403 (Unauthorized/Forbidden)
+Enter a valid Hugging Face token
 
-Check internet connection
-Verify token is correct
-Check if repository is private
-Check if repository exists
-File corrupted after resume
+Ensure the token has access to the repository
 
-Tool has built-in Range fallback protection
-If server doesn't support Range (returns 200 instead of 206), it starts download from scratch
-This is intentional to prevent file corruption
-GUI doesn't start
+Insufficient Disk Space
+Free up space or change the download folder
 
-Check Tkinter is installed (usually included with Python)
-On Linux: sudo apt-get install python3-tk
-On macOS: brew install python-tk
-Performance Tips
+You can modify DISK_SPACE_MARGIN in the code (default: 1.1 = 10% buffer)
 
-Many small files - Keep default threads (4)
-Few large files - Increase threads to 8
-Slow network - Reduce threads to 2
-Fast NVMe SSD - Keep default or increase
-Network interruptions - Tool handles resume automatically
-Technical Details
-Download Flow
+GUI Doesn't Start on Linux
+bash
+sudo apt-get install python3-tk  # Debian/Ubuntu
+brew install python-tk           # macOS
+📝 License
+Distributed under the MIT License. See the LICENSE file for details.
 
-Parse HF repo to get file list with sizes and hashes
-User selects files to start download
-Check disk space - abort if insufficient
-Parallel download with Resume (Range requests)
-Smart Range fallback (200 vs 206 handling)
-Real-time progress with speed calculation
-SHA256 verification after download
-Merge via llama-gguf-split
-ETA Calculation
-
-ETA = (Total Bytes - Downloaded Bytes) / Current Speed
-Supported Quantizations
-
-F16, F32, Q8_0, Q6_K, Q5_K_M, Q5_K_S, Q4_K_M, Q4_K_S, Q3_K_M, Q3_K_S, Q2_K, IQ4_XS, IQ3_XS, IQ2_XS, IQ1_S
-License
-
-MIT License - see LICENSE file for details.
-Acknowledgments
-
+🙏 Acknowledgments
 llama.cpp for the merge utility
-Hugging Face for the model hosting
-Python Tkinter for GUI
-Support
 
-Issues: GitHub Issues
-Discussions: GitHub Discussions
-Star This Project
+Hugging Face for hosting models
 
-If you find this tool useful, please give it a star on GitHub!
+The community for testing and ideas
+
+⭐ Support the Project
+If you find this tool useful, please star it on GitHub!
 
 Made with ❤️ for the AI community
+
