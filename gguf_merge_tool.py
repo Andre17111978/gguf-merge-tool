@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""GGUF Merge Tool v10.0 - История запросов + Загрузка локальных файлов"""
+"""GGUF Merge Tool v10.0.1 - История запросов + Загрузка локальных файлов"""
 
 import os,sys,re,threading,subprocess,shutil,hashlib,logging,time,webbrowser,argparse
 from pathlib import Path
@@ -23,7 +23,7 @@ except ImportError: HF_AVAILABLE=False
 
 # === КОНСТАНТЫ ===
 JOBS = min(4, os.cpu_count() or 2)
-VERSION = "10.0"
+VERSION = "10.0.1"
 CHUNK_SIZE = 1024 * 1024
 CONNECT_TIMEOUT = 10
 READ_TIMEOUT = 60
